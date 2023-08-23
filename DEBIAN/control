@@ -1,0 +1,5 @@
+Package: alertmaild
+Version: 0.1
+Architecture: all
+Maintainer: Cestnut
+Description: Alerter through mail

@@ -1,0 +1,16 @@
+[Unit]
+Description=Alerter mail service
+After=network.target
+After=docker.service
+StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=/opt/alertmaild
+ExecStart=/opt/alertmaild/venv/bin/python3 /opt/alertmaild/mail_sender.py
+Type=simple
+Restart=always
+
+
+[Install]
+WantedBy=default.target
+RequiredBy=network.target
