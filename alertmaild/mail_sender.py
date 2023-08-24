@@ -14,11 +14,8 @@ class AlerterMail:
 
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
-    def _handle_sigterm(self, sig, frame):
-        self.stop()
-
     def start(self):
-        self.start_smtp_server()
+        self._start_smtp_server()
         i = 0
         while True:
             with open("newFile.txt", "a") as newfile:
@@ -27,15 +24,18 @@ class AlerterMail:
             sleep(1)
 
     def stop(self):
-        self.stop_smtp_server()
+        self._stop_smtp_server()
 
-    def start_smtp_server(self):
+    def _start_smtp_server(self):
         os.system("docker compose down")
         os.system("docker compose up -d")
 
-    def stop_smtp_server(self):
+    def _stop_smtp_server(self):
         os.system("docker compose down")
         sys.exit(0)
+
+    def _handle_sigterm(self, sig, frame):
+        self.stop()
 
 
 sender = 'from@fromdomain.com'
