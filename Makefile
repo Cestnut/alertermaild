@@ -11,11 +11,12 @@ deb: compile
 	mkdir tmp
 	mkdir -p tmp/opt/
 	mkdir -p tmp/lib/systemd/system
-	
+	mkdir -p tmp/var/log/
 	mkdir -p tmp/usr/bin
 
 	cp -r alertmaild tmp/opt/
 	cp alertmail.service tmp/lib/systemd/system
+	touch tmp/var/log/alertmaild.log
 	cp nanoalertmaild tmp/usr/bin
 	
 	cp -r DEBIAN/ tmp/
