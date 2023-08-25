@@ -7,7 +7,7 @@ import sys
 import json
 from datetime import datetime, timedelta
 from time import sleep
-
+from AuthChecker import AuthChecker
 
 class AlerterMail:
     def __init__(self):
@@ -17,13 +17,21 @@ class AlerterMail:
         self.config.read("alertmaild.conf")
         self.mailing_list = self.config["GENERALE"]["MailingList"].split(";")
 
+        #Legge il dizionario reports dal file reports.json. In caso di errore ne crea uno vuoto.
         try:
             with open("reports.json", "r") as reports_file:
-                self.reports = json.load(reports_file)
+                reports = json.load(reports_file)
+                assert "su" in reports
+                assert "sudo" in reports
+                assert "login" in reports
         except Exception as e:
-            self.reports = {"sudo":dict(), "su":dict(), "login":dict(), "ssh":dict(), "time_range":0}
+            reports = {"sudo":dict(), "su":dict(), "login":dict(), "ssh":dict(), "time_range":0}
             if isinstance(e, json.JSONDecodeError):
                 self.log("Error loading from reports.json, defaulting")
+            if isinstance(e, AssertionError):
+                self.log("Error reports.json was corrupted")
+
+        self.auth_checker = AuthChecker(reports, self.config)
 
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
@@ -47,16 +55,12 @@ class AlerterMail:
     def start(self):
         self.log("Daemon started")
         self._start_smtp_server()
-        i = 0
-        while True:
-            with open("newFile.txt", "a") as newfile:
-                newfile.write("ciao {}\n".format(i))
-                i+=1
-            sleep(1)
+        for alert in self.auth_checker.alerts():
+            print(alert)
 
     def stop(self):
         with open("reports.json", "w") as reports_file:
-            json.dump(self.reports, reports_file)
+            json.dump(self.auth_checker.reports, reports_file)
         self.log("Daemon stopped")
         self._stop_smtp_server()
 
