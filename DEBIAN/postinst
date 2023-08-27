@@ -4,5 +4,12 @@ cd /opt/alertmaild
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+
+chown -R root:root /opt/alertmaild
+chmod -R 700 /opt/alertmaild
+
+chown root:root /usr/bin/nanoalertmaild
+chmod 700 /usr/bin/nanoalertmaild
+
 systemctl enable alertmail
-systemctl start alertmail
+systemctl start alertmail 
