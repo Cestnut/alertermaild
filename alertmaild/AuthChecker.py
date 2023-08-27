@@ -105,6 +105,7 @@ class AuthChecker:
         user = pwd.getpwuid(user_uid).pw_name
         if user in self.reports["sudo"]:
             self.reports["sudo"].pop(user)
+        return ""
 
     def su_failed(self, content, date):
         src_user = content[5]
@@ -135,6 +136,7 @@ class AuthChecker:
         src_user = pwd.getpwuid(src_user_uid).pw_name
         if src_user in self.reports["su"] and dst_user in self.reports["su"][src_user]:
             self.reports["su"][src_user].pop(dst_user)
+        return ""
 
     def login_failed(self, content, date):
         user = content[7].strip(",").strip("'")
@@ -159,3 +161,4 @@ class AuthChecker:
         user = content[6].split("(uid=")[0]
         if user in self.reports["login"]:
             self.reports["login"].pop(user)
+        return ""

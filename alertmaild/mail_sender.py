@@ -37,7 +37,7 @@ class AlerterMail:
 
     def log(self, message):
         now = datetime.now()
-        now = now.strftime("%d/%m/%Y, %H:%M:%S")
+        now = now.strftime("%d/%m/%Y %H:%M:%S")
 
         with open(self.log_path, "a") as log_file:
             log_file.write("{} {}\n".format(now, message))
@@ -63,8 +63,8 @@ Subject: Alert
 {}
 """
         try:
+            self._start_smtp_server()
             self.log("Daemon started")
-            #self._start_smtp_server()
             smtpObj = None
             while True:
                 try:
