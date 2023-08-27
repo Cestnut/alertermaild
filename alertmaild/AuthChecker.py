@@ -54,13 +54,13 @@ class AuthChecker:
             yield line
 
     def check_hour_range(self, content, date):
-        datetime_hour = datetime(date[2], '%H:%M:%S')
+        datetime_hour = datetime.strptime(date[2], '%H:%M:%S')
         
         begin_hour = self.config["GENERALE"]["FasciaOrariaInizio"]
-        begin_hour = datetime(begin_hour, '%H:%M:%S')
+        begin_hour = datetime.strptime(begin_hour, '%H:%M')
         
-        end_hour = self.config["GENERALE"]["FasciaOrariaInizio"]
-        end_hour = datetime(end_hour, '%H:%M:%S')
+        end_hour = self.config["GENERALE"]["FasciaOrariaFine"]
+        end_hour = datetime.strptime(end_hour, '%H:%M')
         
         cooldown = timedelta(minutes=int(self.config["GENERALE"]["FasciaOrariaIntervalloMinuti"]))
 
