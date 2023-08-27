@@ -15,7 +15,7 @@ class AlerterMail:
         self.log_path = "/var/log/alertmaild.log"
         self.config = ConfigParser()
         self.config.read("alertmaild.conf")
-        self.mailing_list = self.config["GENERALE"]["MailingList"].split(";")
+        self.mailing_list = self.config["GENERALE"]["MailingList"].split(":")
 
         #Legge il dizionario reports dal file reports.json. In caso di errore ne crea uno vuoto.
         try:
@@ -53,10 +53,38 @@ class AlerterMail:
             yield line  
 
     def start(self):
-        self.log("Daemon started")
-        self._start_smtp_server()
-        for alert in self.auth_checker.alerts():
-            print(alert)
+        host = self.config["GENERALE"]["SMTPhost"]
+        port = int(self.config["GENERALE"]["SMTPport"])
+        sender = self.config["GENERALE"]["MailSource"]
+        receivers = []
+        message = """From: Computer <{}>
+Subject: Alert
+
+{}
+"""
+        try:
+            self.log("Daemon started")
+            #self._start_smtp_server()
+            smtpObj = None
+            while True:
+                try:
+                    smtpObj = smtplib.SMTP(host=host, port=port)
+                    break
+                except smtplib.SMTPServerDisconnected:
+                    pass
+
+            print(sender)
+            print(self.mailing_list)
+            for alert in self.auth_checker.alerts():
+                if alert != '':
+                    receivers = ",".join(self.mailing_list)
+
+                    msg = message.format(sender, alert)
+                    smtpObj.sendmail(sender, receivers, msg)
+
+                    self.log("Sent mail. Content: {}".format(alert))
+        except smtplib.SMTPConnectError:
+            print("Error connecting")
 
     def stop(self):
         with open("reports.json", "w") as reports_file:
@@ -76,24 +104,7 @@ class AlerterMail:
         self.stop()
 
 
-sender = 'from@fromdomain.com'
-receivers = ['hihev29182@cwtaa.com']
 
-message = """From: Computer <from@fromdomain.com>
-To: To Admin <to@todomain.com>
-Subject: Alert
-
-This is a test e-mail message.
-"""
-
-"""
-try:
-    smtpObj = smtplib.SMTP(host='localhost', port=25)
-    smtpObj.sendmail(sender, receivers, message)
-    print("Mail sent")
-except smtplib.SMTPConnectError:
-    print("Error connecting")
-"""
 
 alerter = AlerterMail()
 alerter.start()
