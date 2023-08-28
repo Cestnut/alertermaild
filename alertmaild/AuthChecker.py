@@ -22,6 +22,8 @@ class AuthChecker:
             date = " ".join(line[0:3])
             content = line[4:]
             message = ""
+            #Effettua prima un controllo sulla fascia oraria, indipendentemente dal fatto che il comando sia stato
+            #eseguito con successo o meno, poi continua con gli altri.
             if self.config["GENERALE"]["FasciaOrariaBool"] and content[0] in ["sudo", "su", "login"]:
                 message = self.check_hour_range(content, date)
                 yield message
@@ -42,7 +44,8 @@ class AuthChecker:
                 if len(content) > 3 and  "opened" in content[3]:
                     message = self.login_clean(content)
             yield message
-
+    
+    #Generatore che sposta il cursore alla fine e ritorna ogni nuova linea del file passato come parametro
     def follow(self, file):
         file.seek(0, os.SEEK_END)
         while True:
@@ -66,7 +69,9 @@ class AuthChecker:
 
         alert_bool = False
 
+        #Controlla se è passato abbastanza tempo dall'ultima notifica che riguarda un comando effettuato nell'intervallo di tempo specificato
         if not self.reports["time_range"] or datetime_hour >= self.reports["time_range"] + cooldown:
+            #Il controllo da fare cambia se il range da monitorare è sovrapposto tra due giorni (ora di inizio più tardi di quelle di fine)
             if end_hour > begin_hour:
                 if datetime_hour > begin_hour and datetime_hour < end_hour:
                     alert_bool = True
@@ -81,6 +86,9 @@ class AuthChecker:
             message = ""
         return message        
 
+    #Questo metodo così come gli altri con nome *_failed crea e inizializza una nuova entry nel dizionario reports se non esiste.
+    #Se esiste semplicemente incrementa il counter, infine controlla se il counter ha raggiunto il valore massimo settato nel file di configurazione
+    #e in caso ritorna il messaggio di alert
     def sudo_failed(self, content, date):
         user = content[1]
         if user in self.reports["sudo"]:
@@ -100,6 +108,8 @@ class AuthChecker:
         else:
             return ""
 
+    #Questo metodo così come gli altri con nome *_clean rimuove l'entry che si riferisce all'utente che ha eseguito il comando con successo
+    #Dato che nella linea di log è presente l'UID dell'utente ma non il suo user sia usa il metodo pwd.getpwuid per ottenere l'username
     def sudo_clean(self, content):
         user_uid = int(content[8].split("uid=")[1].strip(")"))
         user = pwd.getpwuid(user_uid).pw_name
