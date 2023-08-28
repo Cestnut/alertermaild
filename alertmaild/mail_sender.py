@@ -25,7 +25,7 @@ class AlerterMail:
                 assert "sudo" in reports
                 assert "login" in reports
         except Exception as e:
-            reports = {"sudo":dict(), "su":dict(), "login":dict(), "ssh":dict(), "time_range":0}
+            reports = {"sudo":dict(), "su":dict(), "login":dict(), "time_range":0}
             if isinstance(e, json.JSONDecodeError):
                 self.log("Error loading from reports.json, defaulting")
             if isinstance(e, AssertionError):
@@ -41,16 +41,6 @@ class AlerterMail:
 
         with open(self.log_path, "a") as log_file:
             log_file.write("{} {}\n".format(now, message))
-
-    def follow(file):
-        file.seek(0, os.SEEK_END)
-        while True:
-            line = file.readline()        
-            if not line:
-                time.sleep(1) #sleep per dare il tempo al file di aggiornarsi
-                continue
-
-            yield line  
 
     def start(self):
         host = self.config["GENERALE"]["SMTPhost"]
